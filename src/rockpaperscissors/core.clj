@@ -81,11 +81,13 @@
   (let [open-challenges @open-game-challenges
         challenge-for-user (get open-challenges user-id)
         invite-channel (:invite-channel challenge-for-user)]
-    (go
-      (log/info invite-channel)
-      (>! invite-channel "Accepted")
-      (m/create-interaction-response! api id token 4
-                                      :data {:flags ephemeral :content "Accepted Challenge" :components rock-paper-scissors-component}))))
+    (if challenge-for-user
+      (go
+        (log/info invite-channel)
+        (>! invite-channel "Accepted")
+        (m/create-interaction-response! api id token 4
+                                        :data {:flags ephemeral :content "Accepted Challenge" :components rock-paper-scissors-component}))
+      (m/create-interaction-response! api id token 4 :data {:flags ephemeral :content "You have not been challenged by anyone."}))))
 
 (a/go-loop []
   (when-let [interaction (a/<! interaction-events)]
