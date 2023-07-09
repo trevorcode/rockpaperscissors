@@ -50,7 +50,7 @@
         (as-> $ (assoc $ :winner (check-for-match-winner (:rounds $) 3))))))
 
 (defn player-choice [state {action :action player-name :player}]
-  (let [player (if (=  player-name (-> state :player1 :name))
+  (let [player (if (= player-name (-> state :player1 :id))
                  :player1
                  :player2)]
     (print action)
