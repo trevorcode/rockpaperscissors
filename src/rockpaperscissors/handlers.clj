@@ -7,15 +7,53 @@
             [rockpaperscissors.games :as games]
             [rockpaperscissors.state :as state :refer [ephemeral]]))
 
-(defn resolve-it [{{event-type :name} :data}]
+(defn resolve-it [{{event-type :name
+                    custom-id :custom-id
+                    component-type :component-type} :data}]
   (log/info event-type)
-  event-type)
+  (if (= 2 component-type)
+    custom-id
+    event-type))
 
 (defmulti handle-command #'resolve-it)
+
+(defn handle-rpc-action [action {:keys [id token channel-id] {{user-id :id} :user} :member :as test}]
+  (let [game (games/find-game-by-player-id @state/games-channel-map user-id)]
+    (when game
+      (go (>! (-> game :channel) {:action (keyword action)
+                                  :player user-id
+                                  :interaction-token token
+                                  :interaction-id id})
+          (m/create-interaction-response!
+           state/message-conn
+           id
+           token
+           4
+           :data {:flags ephemeral :content (str "You chose " action)})
+          (m/create-message! state/message-conn channel-id :content (str (fmt/mention-user user-id) " has chosen " action))))))
+
+(defmethod handle-command "rock"
+  [event]
+  (handle-rpc-action "rock" event))
+
+(defmethod handle-command "paper"
+  [event]
+  (handle-rpc-action "paper" event))
+
+(defmethod handle-command "scissors"
+  [event]
+  (handle-rpc-action "scissors" event))
 
 (defmethod handle-command :default
   [event-data]
   (log/info event-data))
+
+(defmethod handle-command "test"
+  [{:keys [id token channel-id] {{user-id :id} :user} :member {[{target-id :value}] :options} :data :as test}]
+  (m/create-interaction-response! state/message-conn id token 4
+                                  :data {:flags ephemeral :content "Awaiting challenge"})
+  (m/create-followup-message! state/message-conn state/app-id token
+                              :content "Awaiting challenge x2" :flags ephemeral))
 
 (defn challenge-player [player1 player2 token channel-id]
   (let [invite-channel (chan)]
@@ -55,10 +93,11 @@
         challenge-for-user (get open-challenges user-id)
         invite-channel (:invite-channel challenge-for-user)]
     (if challenge-for-user
-      (go
-        (log/info invite-channel)
-        (>! invite-channel token)
-        (swap! state/open-game-challenges dissoc user-id)
+      (do
         (m/create-interaction-response! state/message-conn id token 4
-                                        :data {:flags ephemeral :content "Accepted Challenge" :components components/rock-paper-scissors-component}))
+                                        :data {:flags ephemeral
+                                               :content "Accepted Challenge!"
+                                               :components components/rock-paper-scissors-component})
+        (go (>! invite-channel token)))
+
       (m/create-interaction-response! state/message-conn id token 4 :data {:flags ephemeral :content "You have not been challenged by anyone."}))))

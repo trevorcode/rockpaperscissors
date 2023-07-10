@@ -11,4 +11,5 @@
 
 (defn register-commands []
   (m/create-guild-application-command! state/message-conn state/app-id state/guild-id "duel" "It's time to duel!" :options duel-options)
-  (m/create-guild-application-command! state/message-conn state/app-id state/guild-id "accept" "Accept the duel"))
+  (m/create-guild-application-command! state/message-conn state/app-id state/guild-id "accept" "Accept the duel")
+  (m/create-guild-application-command! state/message-conn state/app-id state/guild-id "test" "Testing"))

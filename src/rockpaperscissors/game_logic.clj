@@ -1,4 +1,5 @@
-(ns rockpaperscissors.game-logic)
+(ns rockpaperscissors.game-logic 
+  (:require [clojure.tools.logging :as log]))
 
 (defn determine-round-winner
   "Determines the round winner of the rock paper scissors"
@@ -49,9 +50,17 @@
         (update :rounds conj old-round)
         (as-> $ (assoc $ :winner (check-for-match-winner (:rounds $) 3))))))
 
-(defn player-choice [state {action :action player-name :player}]
-  (let [player (if (= player-name (-> state :player1 :id))
-                 :player1
-                 :player2)]
-    (print action)
-    (assoc-in state [player :action] action)))
+(defn get-player-by-action [state {player :player}]
+  (log/info (str "comparing " player "to " (get-in state [:player1 :id])))
+  (if (= player (-> state :player1 :id))
+    :player1
+    :player2))
+
+(defn player-choice [state {action :action
+                            player :player
+                            interaction-token :interaction-token
+                            :as event}]
+  (let [player (get-player-by-action state event)]
+    (-> state
+        (assoc-in [player :action] action)
+        #_(assoc-in [player :interaction-token] interaction-token))))
