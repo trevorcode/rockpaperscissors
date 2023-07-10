@@ -67,7 +67,7 @@
               (= action :scissors))
           (let [new-state (rps/player-choice state event)
                 player (get-player-by-action state event)]
-            (m/delete-original-interaction-response!
+            #_(m/delete-original-interaction-response!
              state/message-conn
              state/app-id
              (-> state player :interaction-token))

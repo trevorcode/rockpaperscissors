@@ -28,9 +28,9 @@
            state/message-conn
            id
            token
-           4
-           :data {:flags ephemeral :content (str "You chose " action)})
-          (m/create-message! state/message-conn channel-id :content (str (fmt/mention-user user-id) " has chosen " action))))))
+           7
+           :data {:flags ephemeral :content (str "You chose " action) :components nil})
+          #_(m/create-message! state/message-conn channel-id :content (str (fmt/mention-user user-id) " has chosen " action))))))
 
 (defmethod handle-command "rock"
   [event]
