@@ -1,6 +1,18 @@
 (ns rockpaperscissors.game-logic 
   (:require [clojure.tools.logging :as log]))
 
+(def losing-move
+  "Map associating a move to a move that beats it"
+  {:rock     :paper
+   :paper    :scissors
+   :scissors :rock})
+
+(defn who-wins? [move-1 move-2]
+  (cond
+    (= move-1 move-2) :tie
+    (= move-1 (losing-move move-2)) :player1
+    (= move-2 (losing-move move-1)) :player2))
+
 (defn determine-round-winner
   "Determines the round winner of the rock paper scissors"
   [p1Action p2Action]
@@ -42,7 +54,7 @@
         old-round {:round (state :current-round)
                    :player1-action player1-action
                    :player2-action player2-action
-                   :winner (determine-round-winner player1-action player2-action)}]
+                   :winner (who-wins? player1-action player2-action)}]
     (-> state
         (assoc-in [:player1 :action] nil)
         (assoc-in [:player2 :action] nil)
@@ -50,7 +62,7 @@
         (update :rounds conj old-round)
         (as-> $ (assoc $ :winner (check-for-match-winner (:rounds $) 3))))))
 
-(defn get-player-by-action [state {player :player}]
+(defn get-player-by-action [state player]
   (log/info (str "comparing " player "to " (get-in state [:player1 :id])))
   (if (= player (-> state :player1 :id))
     :player1
@@ -60,7 +72,7 @@
                             player :player
                             interaction-token :interaction-token
                             :as event}]
-  (let [player (get-player-by-action state event)]
+  (let [player (get-player-by-action state player)]
     (-> state
         (assoc-in [player :action] action)
         #_(assoc-in [player :interaction-token] interaction-token))))

@@ -7,7 +7,8 @@
                  [org.clojure/core.async "1.6.673"]
                  [com.github.discljord/discljord "1.3.1"]
                  [com.github.johnnyjayjay/slash "0.6.0-SNAPSHOT"]
-                 [mount "0.1.17"]]
+                 [mount "0.1.17"]
+                 [aero "1.1.6"]]
   :main ^:skip-aot rockpaperscissors.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all

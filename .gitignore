@@ -14,4 +14,4 @@ pom.xml.asc
 .calva/output-window/output.calva-repl
 .clj-kondo/*
 .lsp/*
-src/rockpaperscissors/config.clj
+resources/config.edn
